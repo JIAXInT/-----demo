@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- 引入外部样式表 -->
+    <title>客服端</title>
+  </head>
+  <body>
+    <div class="chat" style="max-width: 1200px; max-height: 800px">
+      <div class="chat__header">品牌服装网在线客服</div>
+      <div class="chat__content">
+        <div class="chat__content__list">
+          <ul id="userList">
+            <li class="active">
+              <div class="author"><img src="http://news.china-ef.com/2022/images/slogo.png" alt="" /></div>
+              <div class="name">
+                <span>游客</span>
+                <p>test</p>
+              </div>
+              <div class="time">3月21日 11:30</div>
+            </li>
+            <li>
+              <div class="author"><img src="http://news.china-ef.com/2022/images/slogo.png" alt="" /></div>
+              <div class="name">
+                <span>游客2</span>
+                <p>你好</p>
+              </div>
+              <div class="time">3月21日 11:30</div>
+            </li>
+            <li>
+              <div class="author"><img src="http://news.china-ef.com/2022/images/slogo.png" alt="" /></div>
+              <div class="name">
+                <span>游客3</span>
+                <p>品牌如何加盟</p>
+              </div>
+              <div class="time">3月21日 11:30</div>
+            </li>
+          </ul>
+        </div>
+        <div class="chat__content__item">
+          <div class="chat__container" id="scrollableDiv">
+            <div class="time">3月21日 11:30</div>
+            <div class="message left">
+              <div class="author"><img src="http://news.china-ef.com/2022/images/slogo.png" alt="" /></div>
+              <div class="msg">testtest</div>
+            </div>
+            <div class="message right">
+              <div class="author"><img src="http://news.china-ef.com/2022/images/slogo.png" alt="" /></div>
+              <div class="msg">testtestesttesttesttesttetesttestesttesttesttesttesttesttesttesttesttesttesttesttsttesttesttesttesttesttesttestt</div>
+            </div>
+          </div>
+          <div class="chat__control">
+            <div class="toolbar">
+              <div class="toolbar__item">
+                <span><img src="./images/emoji.svg" alt="" /></span>
+              </div>
+              <div class="toolbar__item">
+                <span><img src="./images/photo.svg" alt="" /></span>
+                <input type="file" id="file" accept="image/*" />
+              </div>
+            </div>
+            <textarea name="" id="textarea" cols="30" rows="10"></textarea>
+            <button id="button" onclick="submit()">发送</button>
+          </div>
+        </div>
+        <div class="chat__content__sidebar">
+          <div class="name">
+            <img src="http://news.china-ef.com/2022/images/slogo.png" alt="" />
+            <span>游客</span>
+            <input type="text" style="display: none" name="" id="" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script src="/socket.io.js"></script>
+  <script>
+    const socket = io("http://192.168.3.12:3000");
+
+    const chatContainer = document.querySelector(".chat__container");
+    const textarea = document.getElementById("textarea");
+    var message = textarea.value;
+    // 发送消息
+    function submit() {
+      message = textarea.value;
+
+      const time = formatDate();
+      let lastTime = 1711001200000;
+      let now = new Date().getTime();
+
+      if (!message) return;
+
+      // 发送消息
+      socket.emit("kefu message", message);
+
+      // 如果当前的时间大于lastTime五分钟前，则添加时间
+      if (now - lastTime > 5 * 60 * 1000) {
+        const timeElement = document.createElement("div");
+        timeElement.innerHTML = `
+          <div class="time">${time}</div>
+        `;
+        chatContainer.appendChild(timeElement);
+        lastTime = new Date().getTime();
+      }
+
+      // 滚动到底部
+      scrollToBottom();
+    }
+
+    socket.on("kefu message", function (msg) {
+      console.log(msg);
+      const messageElement = document.createElement("div");
+      messageElement.innerHTML = `
+        <div class="message right">
+          <div class="author"><img src="http://news.china-ef.com/2022/images/slogo.png" alt="" /></div>
+          <div class="msg">${msg}</div>
+        </div>
+      `;
+      chatContainer.appendChild(messageElement);
+      // 清空textarea的内容;
+      textarea.value = "";
+    });
+    socket.on("kehu message", function (msg) {
+      console.log(msg);
+      const messageElement = document.createElement("div");
+      messageElement.innerHTML = `
+        <div class="message left">
+          <div class="author"><img src="http://news.china-ef.com/2022/images/slogo.png" alt="" /></div>
+          <div class="msg">${msg}</div>
+        </div>
+      `;
+      chatContainer.appendChild(messageElement);
+      // 清空textarea的内容;
+      textarea.value = "";
+    });
+  </script>
+
+  <script>
+    /**
+     * 获取指定时间或当前时间，格式为：3月21日 11:30
+     * @param {Date} [date] - 指定的时间，默认为当前时间
+     * @returns {string} - 格式化后的时间字符串
+     */
+    function formatDate(date = new Date()) {
+      const month = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+      const year = date.getFullYear();
+      const monthIndex = date.getMonth();
+      const day = date.getDate();
+      const hour = date.getHours();
+      const minute = date.getMinutes().toString().padStart(2, "0");
+
+      return `${month[monthIndex]}${day}日 ${hour}:${minute}`;
+    }
+
+    // 选中图片添加到聊天框;
+    const fileInput = document.getElementById("file");
+    fileInput.addEventListener("change", function () {
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = function () {
+        const chatContainer = document.querySelector(".chat__container");
+        const time = formatDate();
+        const messageElement = document.createElement("div");
+        messageElement.innerHTML = `
+          <div class="message right">
+            <div class="author"><img src="http://news.china-ef.com/2022/images/slogo.png" alt="" /></div>
+            <div class="msg"><img src="${reader.result}" alt="" /></div>
+          </div>
+        `;
+        chatContainer.appendChild(messageElement);
+
+        // 滚动到底部
+        scrollToBottom();
+      };
+    });
+
+    // 滚动到底部
+    function scrollToBottom() {
+      const scrollableDiv = document.getElementById("scrollableDiv");
+      scrollableDiv.scrollTop = scrollableDiv.scrollHeight;
+    }
+    window.addEventListener("DOMContentLoaded", function () {
+      scrollToBottom();
+    });
+
+    // 列表点击
+    var userLists = document.querySelectorAll("#userList li");
+    for (var i = 0; i < userLists.length; i++) {
+      userLists[i].addEventListener("click", function () {
+        for (var j = 0; j < userLists.length; j++) {
+          userLists[j].classList.remove("active");
+        }
+        this.classList.add("active");
+      });
+    }
+  </script>
+</html>

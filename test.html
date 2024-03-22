@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="chat__button"><img src="./images/message .svg" />在线咨询</div>
+
+    <div id="kefuPop" style="display: block">
+      <span>
+        <img src="./images/pop.svg" id="pop" />
+        <img src="./images/close.svg" id="close" />
+      </span>
+      <iframe class="popup" src="./index.html" width="400" height="600" frameborder="0"></iframe>
+    </div>
+  </body>
+
+  <script>
+    // 点击弹出对话框
+    const chatButton = document.querySelector(".chat__button");
+    chatButton.addEventListener("click", function () {
+      document.querySelector("#kefuPop").style.display = "block";
+      // const openNewWin = window.open("index.html", "单独窗口", "height=650,width=840,top=200,left=500,toolbar=no,menubar=no, scrollbars=no,resizable=no,location=no, status=no");
+    });
+
+    // 关闭弹窗
+    const close = document.querySelector("#close");
+    close.addEventListener("click", function () {
+      document.querySelector("#kefuPop").style.display = "none";
+    });
+
+    // 弹出新窗口
+    const pop = document.querySelector("#pop");
+    pop.addEventListener("click", function () {
+      const openNewWin = window.open("index.html", "单独窗口", "height=650,width=840,top=200,left=500,toolbar=no,menubar=no, scrollbars=no,resizable=no,location=no, status=no");
+      document.querySelector("#kefuPop").style.display = "none";
+    });
+  </script>
+</html>
